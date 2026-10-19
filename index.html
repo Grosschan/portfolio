@@ -412,10 +412,7 @@ function embedOf(v) {
 /* Фото: показываем, только если файл действительно есть, иначе остаются инициалы */
 if (SITE.photo) {
   const ph = new Image();
-  ph.onload = () => {
-    document.getElementById("avatar").innerHTML = `<img src="${esc(SITE.photo)}" alt="Артём Асрян">`;
-    setTile("tile-about", SITE.photo);
-  };
+  ph.onload = () => { document.getElementById("avatar").innerHTML = `<img src="${esc(SITE.photo)}" alt="Артём Асрян">`; };
   ph.src = SITE.photo;
 }
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -839,7 +836,7 @@ lb.addEventListener("touchend", () => {
 });
 lb.addEventListener("touchcancel", () => { touch = null; lbImg.classList.add("snap"); lb.classList.add("settle"); resetImg(); setDim(0); });
 
-/* Превью в плитках: обложка шоурила, первая работа по дизайну, фото */
+/* Превью в плитках: обложка шоурила и первая работа по дизайну */
 function setTile(id, url) {
   if (!url) return;
   const tile = document.getElementById(id);
