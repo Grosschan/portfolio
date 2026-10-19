@@ -155,8 +155,15 @@
   /* Лайтбокс */
   .lightbox { position: fixed; inset: 0; z-index: 10; background: rgba(10,10,9,.95); display: none; align-items: center; justify-content: center; padding: 24px 80px; }
   .lightbox.open { display: flex; }
+  .lightbox:focus { outline: none; }
   .lightbox figure { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 100%; }
-  .lightbox img { max-height: calc(100vh - 110px); max-width: 100%; border-radius: 8px; object-fit: contain; }
+  .lightbox img { max-height: calc(100vh - 110px); max-width: 100%; border-radius: 8px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+  .lightbox { touch-action: pinch-zoom; overscroll-behavior: contain; }
+  .lightbox.settle { transition: background-color .3s ease; }
+  .lightbox.settle :is(figcaption, .lb-nav, .lb-close) { transition: opacity .3s ease; }
+  #vlightbox figure.snap { transition: transform .32s cubic-bezier(.22,.61,.36,1), opacity .32s ease; }
+  .lightbox img.snap { transition: transform .32s cubic-bezier(.22,.61,.36,1), opacity .32s ease; }
+  .lightbox img.snap-out { transition: transform .22s cubic-bezier(.55,0,.75,.4), opacity .22s ease-in; }
   .lightbox figcaption { color: var(--muted); font-size: 14px; text-align: center; }
   .vbox video { display: block; max-width: 100%; max-height: calc(100vh - 110px); border-radius: 8px; background: #000; }
   .vbox iframe { display: block; width: min(1280px, calc(100vw - 160px), calc((100vh - 110px) * 16 / 9)); aspect-ratio: 16 / 9; border: 0; border-radius: 8px; background: #000; }
@@ -306,14 +313,14 @@
   <footer>© <span id="year">2026</span> Артём Асрян</footer>
 </div>
 
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+<div class="lightbox" id="lightbox" tabindex="-1" role="dialog" aria-modal="true" aria-label="Просмотр работы">
   <button class="lb-close" type="button" aria-label="Закрыть">×</button>
   <button class="lb-nav lb-prev" type="button" aria-label="Предыдущее изображение"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
   <figure><img alt=""><figcaption></figcaption></figure>
   <button class="lb-nav lb-next" type="button" aria-label="Следующее изображение"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
 </div>
 
-<div class="lightbox" id="vlightbox" role="dialog" aria-modal="true" aria-label="Просмотр видео">
+<div class="lightbox" id="vlightbox" tabindex="-1" role="dialog" aria-modal="true" aria-label="Просмотр видео">
   <button class="lb-close" type="button" aria-label="Закрыть">×</button>
   <figure><div class="vbox"></div><figcaption></figcaption></figure>
 </div>
@@ -476,11 +483,13 @@ function openVideo(v, opener) {
   vlbOpener = opener;
   vlb.classList.add("open");
   document.body.style.overflow = "hidden";
-  vlb.querySelector(".lb-close").focus();
+  vlb.focus();   /* фокус на само окно, чтобы на телефоне крестик не подсвечивался */
 }
 function closeVideo() {
   vbox.innerHTML = "";   /* удаляем плеер, чтобы звук не продолжал играть */
-  vlb.classList.remove("open");
+  vlb.classList.remove("open", "settle");
+  vfig.classList.remove("snap");
+  vReset();
   document.body.style.overflow = "";
   if (vlbOpener) vlbOpener.focus();
 }
@@ -494,6 +503,49 @@ videosEl.addEventListener("click", e => {
 });
 vlb.addEventListener("click", e => { if (e.target === vlb || e.target.closest(".lb-close")) closeVideo(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && vlb.classList.contains("open")) closeVideo(); });
+
+/* Видео: свайп вниз закрывает окно — плеер едет за пальцем, фон растворяется.
+   Внутри iframe (YouTube и т. п.) касания ловит сам плеер, там тянуть можно за поля вокруг */
+const vfig = vlb.querySelector("figure"), vClose = vlb.querySelector(".lb-close");
+let vtouch = null;
+const vReset = () => {
+  vfig.style.transform = vfig.style.opacity = vlb.style.backgroundColor = vClose.style.opacity = "";
+};
+vlb.addEventListener("touchstart", e => {
+  vtouch = e.touches.length === 1
+    ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dy: 0, down: null } : null;
+  vfig.classList.remove("snap");
+  vlb.classList.remove("settle");
+}, { passive: true });
+vlb.addEventListener("touchmove", e => {
+  if (!vtouch) return;
+  if (e.touches.length > 1) { vtouch = null; vReset(); return; }
+  const dx = e.touches[0].clientX - vtouch.x, dy = e.touches[0].clientY - vtouch.y;
+  if (vtouch.down === null && Math.hypot(dx, dy) > 8) vtouch.down = dy > Math.abs(dx);
+  if (!vtouch.down) return;   /* горизонтальные жесты оставляем плееру (перемотка) */
+  vtouch.dy = Math.max(0, dy);
+  const p = Math.min(1, vtouch.dy / (window.innerHeight * 0.5));
+  vfig.style.transform = `translate(${dx * 0.3}px, ${vtouch.dy}px) scale(${1 - p * 0.2})`;
+  vlb.style.backgroundColor = `rgba(10,10,9,${(.95 * (1 - p)).toFixed(3)})`;
+  vClose.style.opacity = Math.max(0, 1 - p * 2);
+}, { passive: true });
+vlb.addEventListener("touchend", () => {
+  if (!vtouch || !vtouch.down) { vtouch = null; return; }
+  const { dy, t } = vtouch;
+  vtouch = null;
+  vfig.classList.add("snap");
+  vlb.classList.add("settle");
+  if (dy > 120 || (dy > 40 && dy / (Date.now() - t) > 0.5)) {
+    vfig.style.transform = `translateY(${window.innerHeight * 0.6}px) scale(.8)`;
+    vfig.style.opacity = "0";
+    vlb.style.backgroundColor = "rgba(10,10,9,0)";
+    vClose.style.opacity = "0";
+    setTimeout(closeVideo, 300);
+  } else {
+    vReset();
+  }
+});
+vlb.addEventListener("touchcancel", () => { vtouch = null; vfig.classList.add("snap"); vlb.classList.add("settle"); vReset(); });
 
 /* Дизайн: карточки */
 const design = SITE.design;
@@ -559,44 +611,51 @@ if (types.length > 1) {
   filtersEl.remove();
 }
 
-/* Лайтбокс: крупный просмотр с перелистыванием */
+/* Лайтбокс: крупный просмотр, листает подряд все работы, видимые с учётом фильтра */
 const lb = document.getElementById("lightbox");
 const lbImg = lb.querySelector("img"), lbCap = lb.querySelector("figcaption");
 const lbPrev = lb.querySelector(".lb-prev"), lbNext = lb.querySelector(".lb-next");
-let lbItem = null, lbPos = 0;
+let lbList = [], lbPos = 0;
 
 function renderLb() {
-  const { w, srcs } = lbItem;
-  const many = srcs.length > 1;
-  lbImg.src = srcs[lbPos];
+  const { w, src, j, n } = lbList[lbPos];
+  lbImg.src = src;
   lbImg.alt = w.title;
-  lbCap.textContent = many ? `${w.title} · ${lbPos + 1} / ${srcs.length}` : w.title;
-  lbPrev.hidden = lbNext.hidden = !many;
+  lbCap.textContent = n > 1 ? `${w.title} · ${j + 1} / ${n}` : w.title;
+  lbPrev.hidden = lbNext.hidden = lbList.length < 2;
+  /* соседние картинки грузим заранее, чтобы свайп был без задержки */
+  [1, -1].forEach(d => { new Image().src = lbList[(lbPos + d + lbList.length) % lbList.length].src; });
 }
-function openLb(w, j) {
-  const src = (w.images || [])[j];
-  if (!src) return;
-  const srcs = w.images.filter(Boolean);
-  lbItem = { w, srcs };
-  lbPos = srcs.indexOf(src);
+function openLb(i, j) {
+  lbList = [];
+  worksEl.querySelectorAll(".work:not([hidden])").forEach(card => {
+    const srcs = (design[card.dataset.i].images || []).filter(Boolean);
+    srcs.forEach((src, k) => lbList.push({ w: design[card.dataset.i], i: +card.dataset.i, src, j: k, n: srcs.length }));
+  });
+  const src = (design[i].images || [])[j];
+  lbPos = lbList.findIndex(x => x.i === i && x.src === src);
+  if (lbPos < 0) return;
   renderLb();
   lb.classList.add("open");
   document.body.style.overflow = "hidden";
-  lb.querySelector(".lb-close").focus();
+  lb.focus();   /* фокус на само окно, чтобы на телефоне крестик не подсвечивался */
 }
 function stepLb(d) {
-  if (!lbItem || lbItem.srcs.length < 2) return;
-  lbPos = (lbPos + d + lbItem.srcs.length) % lbItem.srcs.length;
+  if (lbList.length < 2) return;
+  lbPos = (lbPos + d + lbList.length) % lbList.length;
   renderLb();
 }
 function closeLb() {
-  lb.classList.remove("open");
+  lb.classList.remove("open", "settle");
+  lbImg.classList.remove("snap", "snap-out");
+  resetImg();
+  setDim(0);
   document.body.style.overflow = "";
-  lbItem = null;
+  lbList = [];
 }
 worksEl.addEventListener("click", e => {
   const s = e.target.closest(".slide");
-  if (s) openLb(design[s.closest(".work").dataset.i], +s.dataset.j);
+  if (s) openLb(+s.closest(".work").dataset.i, +s.dataset.j);
 });
 lb.addEventListener("click", e => { if (e.target === lb || e.target.closest(".lb-close")) closeLb(); });
 lbPrev.addEventListener("click", () => stepLb(-1));
@@ -607,14 +666,75 @@ document.addEventListener("keydown", e => {
   if (e.key === "ArrowLeft") stepLb(-1);
   if (e.key === "ArrowRight") stepLb(1);
 });
-let touchX = null;
-lb.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
-lb.addEventListener("touchend", e => {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(dx) > 50) stepLb(dx < 0 ? 1 : -1);
-  touchX = null;
+
+/* Свайп: влево/вправо — следующая работа, вниз — закрыть. Картинка едет за пальцем */
+let touch = null;
+const lbChrome = [lbCap, lbPrev, lbNext, lb.querySelector(".lb-close")];
+const resetImg = () => { lbImg.style.transform = lbImg.style.opacity = ""; };
+/* p от 0 до 1: насколько окно «растворилось» при свайпе вниз */
+const setDim = p => {
+  lb.style.backgroundColor = p ? `rgba(10,10,9,${(.95 * (1 - p)).toFixed(3)})` : "";
+  lbChrome.forEach(el => { el.style.opacity = p ? Math.max(0, 1 - p * 2) : ""; });
+};
+lb.addEventListener("touchstart", e => {
+  touch = e.touches.length === 1
+    ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), dx: 0, dy: 0, horiz: null } : null;
+  lbImg.classList.remove("snap");
+  lb.classList.remove("settle");
+}, { passive: true });
+lb.addEventListener("touchmove", e => {
+  if (!touch) return;
+  if (e.touches.length > 1) { touch = null; resetImg(); setDim(0); return; }   /* щипок для зума не мешаем */
+  const dx = e.touches[0].clientX - touch.x, dy = e.touches[0].clientY - touch.y;
+  if (touch.horiz === null && Math.hypot(dx, dy) > 8) {
+    touch.horiz = Math.abs(dx) > Math.abs(dy);
+    if (touch.horiz && lbList.length < 2) { touch = null; return; }
+  }
+  if (touch.horiz === null) return;
+  if (touch.horiz) {
+    touch.dx = dx;
+    lbImg.style.transform = `translateX(${dx}px)`;
+  } else {
+    touch.dy = Math.max(0, dy);
+    const p = Math.min(1, touch.dy / (window.innerHeight * 0.5));
+    lbImg.style.transform = `translate(${dx * 0.3}px, ${touch.dy}px) scale(${1 - p * 0.2})`;
+    setDim(p);
+  }
+}, { passive: true });
+lb.addEventListener("touchend", () => {
+  if (!touch || touch.horiz === null) { touch = null; return; }
+  const { dx, dy, horiz, t } = touch;
+  touch = null;
+  if (!horiz) {
+    const fast = dy / (Date.now() - t) > 0.5;   /* быстрый смахивающий жест закрывает и на коротком расстоянии */
+    lbImg.classList.add("snap");
+    lb.classList.add("settle");
+    if (dy > 120 || (dy > 40 && fast)) {
+      lbImg.style.transform = `translateY(${window.innerHeight * 0.6}px) scale(.8)`;
+      lbImg.style.opacity = "0";
+      setDim(1);
+      setTimeout(closeLb, 300);
+    } else {
+      resetImg();
+      setDim(0);
+    }
+    return;
+  }
+  if (Math.abs(dx) < 50) { lbImg.classList.add("snap"); resetImg(); return; }
+  const d = dx < 0 ? 1 : -1, off = window.innerWidth * 0.6;
+  lbImg.classList.add("snap-out");
+  lbImg.style.transform = `translateX(${-d * off}px)`;
+  lbImg.style.opacity = "0";
+  setTimeout(() => {
+    lbImg.classList.remove("snap-out");
+    stepLb(d);
+    lbImg.style.transform = `translateX(${d * off * 0.5}px)`;
+    void lbImg.offsetWidth;   /* фиксируем стартовую позицию, чтобы въезд анимировался */
+    lbImg.classList.add("snap");
+    resetImg();
+  }, 220);
 });
+lb.addEventListener("touchcancel", () => { touch = null; lbImg.classList.add("snap"); lb.classList.add("settle"); resetImg(); setDim(0); });
 
 /* Превью в плитках: обложка шоурила, первая работа по дизайну, фото */
 function setTile(id, url) {
