@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Артём Асрян — видео и дизайн</title>
+<meta name="description" content="Портфолио: съёмка и монтаж видео, афиши, листовки и ролл-апы.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #161615;
+    --surface: #1f1f1d;
+    --surface-2: #292927;
+    --line: #34342f;
+    --text: #f2f1ec;
+    --muted: #9a9993;
+    --accent: #e5484d;   /* акцентный цвет — можно поменять на любой */
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Manrope', system-ui, sans-serif; font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- Верхняя панель ---------- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; font-size: 14px; color: var(--muted); }
+  .topbar nav { display: flex; gap: 20px; }
+  .topbar a:hover { color: var(--text); }
+  .status { display: inline-flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: rec 1.6s ease-in-out infinite; }
+  @keyframes rec { 50% { opacity: .25; } }
+
+  /* ---------- Шапка: фото + имя ---------- */
+  .hero { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 56px 0 44px; }
+  .avatar {
+    width: 112px; height: 112px; flex-shrink: 0; border-radius: 50%; overflow: hidden;
+    background: var(--surface-2); border: 2px solid var(--line);
+    display: grid; place-items: center;
+    font-family: 'Unbounded', sans-serif; font-size: 32px; color: var(--muted);
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .hero h1 { font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: clamp(28px, 4.4vw, 44px); line-height: 1.1; letter-spacing: -0.01em; }
+  .hero p { color: var(--muted); font-size: 17px; margin-top: 8px; }
+
+  /* ---------- Три плитки ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-bottom: 96px; }
+  .tile {
+    position: relative; aspect-ratio: 4 / 3.4; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface); border: 1px solid var(--line);
+    transition: border-color .25s, transform .25s;
+  }
+  .tile:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .tile-bg { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: .6; transition: transform .5s, opacity .3s; }
+  .tile:hover .tile-bg { transform: scale(1.05); opacity: .75; }
+  .tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14,14,13,.92) 0%, rgba(14,14,13,0) 60%); }
+  .tile-icon { position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); color: var(--muted); transition: color .25s; }
+  .tile:hover .tile-icon { color: var(--text); }
+  .tile.has-preview .tile-icon { display: none; }
+  .tile-body { position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .tile-title { display: block; font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: 20px; }
+  .tile-sub { display: block; font-size: 14px; color: var(--muted); }
+  .tile-arrow { font-size: 22px; color: var(--muted); transition: transform .25s, color .25s; }
+  .tile:hover .tile-arrow { color: var(--accent); transform: translateX(4px); }
+
+  /* ---------- Разделы ---------- */
+  section { padding: 72px 0; border-top: 1px solid var(--line); scroll-margin-top: 8px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+  .section-head h2 { font-family: 'Unbounded', sans-serif; font-weight: 500; font-size: clamp(24px, 3.2vw, 32px); }
+  .section-head span { color: var(--muted); font-size: 14px; }
+
+  /* Видео */
+  .videos { display: grid; gap: 40px; }
+  .vgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+  .vgrid.reel { grid-template-columns: minmax(0, 1fr); }
+  /* Вертикальные ролики: высокий плеер, текст справа от него */
+  .video.is-vertical { display: grid; grid-template-columns: minmax(0, 9fr) minmax(0, 10fr); gap: 20px; align-items: end; }
+  .video.is-vertical .player { aspect-ratio: 9 / 16; }
+  .video.is-vertical h3 { margin-top: 0; }
+  .format-head { display: flex; align-items: center; gap: 16px; margin: -8px 0 -16px; }
+  .format-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .format-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; font-weight: 600; color: var(--text); }
+  .format-pill svg { color: var(--muted); }
+  .player {
+    position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden;
+    background: var(--surface-2) center / cover no-repeat; border: 1px solid var(--line);
+    width: 100%; cursor: pointer; color: var(--text); font: inherit;
+  }
+  .player iframe, .player video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .player video { object-fit: contain; background: #000; }
+  .player .poster { object-fit: cover; background: none; pointer-events: none; }
+  .player.playing { cursor: auto; }
+  .play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 68px; height: 68px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(14,14,13,.55); border: 1.5px solid rgba(242,241,236,.8);
+    transition: background .25s, transform .25s;
+  }
+  .player:hover .play { background: var(--accent); border-color: var(--accent); transform: translate(-50%, -50%) scale(1.06); }
+  .player .empty { position: absolute; left: 16px; bottom: 12px; font-size: 13px; color: var(--muted); }
+  .video h3 { font-size: 18px; font-weight: 600; margin-top: 14px; }
+  .video p { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tag { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer; transition: color .2s, background .2s, border-color .2s; }
+  .tag:hover { color: var(--text); border-color: var(--muted); }
+  .tag.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+  #videos [hidden] { display: none !important; }
+  .reset-filter { font: inherit; font-size: 14px; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+  .reset-filter:hover { border-color: var(--muted); }
+  .reset-filter span { color: var(--muted); margin-left: 4px; }
+
+  /* Дизайн: фильтр */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 28px; }
+  .filter { padding: 7px 16px; border-radius: 99px; border: 1px solid var(--line); background: none; color: var(--muted); font: inherit; font-size: 14px; cursor: pointer; transition: color .2s, background .2s, border-color .2s; }
+  .filter:hover { color: var(--text); border-color: var(--muted); }
+  .filter.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  /* Дизайн: карточки */
+  .works { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }
+  .work[hidden] { display: none; }
+  .frame { position: relative; aspect-ratio: 4 / 5; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); transition: transform .3s, border-color .3s; }
+  .work:hover .frame { transform: translateY(-4px); border-color: var(--accent); }
+  .slides { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .slides::-webkit-scrollbar { display: none; }
+  .slide { flex: 0 0 100%; height: 100%; scroll-snap-align: start; border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: zoom-in; }
+  /* Работа вписывается в одну и ту же «рамку»: сверху место под метки, снизу — под точки листалки */
+  .slide img { width: 100%; height: 100%; object-fit: contain; padding: 60px 28px 40px; }
+  .fit-cover .slide img { object-fit: cover; padding: 0; }
+  .ph { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; text-align: left; padding: 48px 18px 18px; font-family: 'Unbounded', sans-serif; }
+  .ph b { font-weight: 600; font-size: 22px; line-height: 1.05; }
+  .ph small { font-family: 'Manrope', sans-serif; font-size: 12px; opacity: .75; }
+  .badge, .counter { position: absolute; top: 12px; z-index: 2; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: rgba(14,14,13,.72); color: var(--text); pointer-events: none; }
+  .badge { left: 12px; }
+  .counter { right: 12px; font-variant-numeric: tabular-nums; }
+  .arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(14,14,13,.7); color: var(--text); display: grid; place-items: center; cursor: pointer; opacity: 0; transition: opacity .2s, background .2s; }
+  .arrow.prev { left: 10px; }
+  .arrow.next { right: 10px; }
+  .work:hover .arrow, .arrow:focus-visible { opacity: 1; }
+  .arrow:hover { background: var(--accent); }
+  .arrow[disabled] { opacity: 0 !important; pointer-events: none; }
+  @media (hover: none) { .arrow { opacity: 1; } }
+  .dots { position: absolute; left: 0; right: 0; bottom: 12px; z-index: 2; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+  .dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(242,241,236,.45); transition: width .25s, background .25s; }
+  .dots i.on { width: 18px; background: var(--text); }
+  .work h3 { font-size: 16px; font-weight: 600; line-height: 1.35; margin-top: 12px; }
+
+  /* Лайтбокс */
+  .lightbox { position: fixed; inset: 0; z-index: 10; background: rgba(10,10,9,.95); display: none; align-items: center; justify-content: center; padding: 24px 80px; }
+  .lightbox.open { display: flex; }
+  .lightbox figure { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 100%; }
+  .lightbox img { max-height: calc(100vh - 110px); max-width: 100%; border-radius: 8px; object-fit: contain; }
+  .lightbox figcaption { color: var(--muted); font-size: 14px; text-align: center; }
+  .vbox video { display: block; max-width: 100%; max-height: calc(100vh - 110px); border-radius: 8px; background: #000; }
+  .vbox iframe { display: block; width: min(1280px, calc(100vw - 160px), calc((100vh - 110px) * 16 / 9)); aspect-ratio: 16 / 9; border: 0; border-radius: 8px; background: #000; }
+  .lb-close { position: absolute; top: 12px; right: 18px; background: none; border: 0; color: var(--text); font-size: 34px; line-height: 1; cursor: pointer; }
+  .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: rgba(14,14,13,.6); color: var(--text); display: grid; place-items: center; cursor: pointer; transition: background .2s, border-color .2s; }
+  .lb-nav:hover { background: var(--accent); border-color: var(--accent); }
+  .lb-prev { left: 18px; }
+  .lb-next { right: 18px; }
+  .lb-nav[hidden] { display: none; }
+
+  /* Обо мне */
+  .about { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; }
+  .about p { font-size: 18px; color: #d6d5cf; }
+  .about p + p { margin-top: 16px; }
+  .about h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+  .chip { padding: 7px 14px; border-radius: 99px; background: var(--surface-2); font-size: 14px; }
+
+  /* Контакты */
+  .contact { text-align: center; padding: 96px 0 72px; }
+  .contact h2 { font-family: 'Unbounded', sans-serif; font-weight: 600; font-size: clamp(28px, 5vw, 52px); line-height: 1.1; }
+  .contact p { color: var(--muted); margin-top: 12px; }
+  .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 32px; }
+  .btn { padding: 14px 26px; border-radius: 99px; border: 1px solid var(--line); font-weight: 600; transition: background .25s, border-color .25s; }
+  .btn:hover { border-color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #f15d61; }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 0 40px; }
+
+  /* ---------- Телефон ---------- */
+  @media (max-width: 760px) {
+    .topbar nav { gap: 14px; }
+    .hero { flex-direction: column; text-align: center; gap: 18px; padding: 32px 0 32px; }
+    .avatar { width: 96px; height: 96px; }
+    .tiles { grid-template-columns: 1fr; gap: 12px; padding-bottom: 64px; }
+    .tile { aspect-ratio: auto; height: 120px; }
+    .tile-icon { top: 50%; left: auto; right: 64px; transform: translateY(-50%); }
+    .tile::after { background: linear-gradient(to right, rgba(14,14,13,.92) 0%, rgba(14,14,13,.2) 100%); }
+    .tile-body { top: 0; bottom: 0; align-items: center; }
+    .vgrid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .video.is-vertical { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+    .works { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+    .ph { padding: 40px 12px 12px; }
+    .ph b { font-size: 15px; }
+    .badge, .counter { top: 8px; font-size: 11px; padding: 3px 8px; }
+    .slide img { padding: 48px 12px 30px; }
+    .badge { left: 8px; }
+    .counter { right: 8px; }
+    .arrow { width: 30px; height: 30px; }
+    .arrow.prev { left: 6px; }
+    .arrow.next { right: 6px; }
+    .lightbox { padding: 56px 12px 88px; }
+    #vlightbox { padding: 56px 12px 24px; }
+    .vbox video { max-height: calc(100vh - 120px); }
+    .vbox iframe { width: calc(100vw - 24px); }
+    .lb-nav { top: auto; bottom: 20px; transform: none; }
+    .lb-prev { left: calc(50% - 60px); }
+    .lb-next { right: calc(50% - 60px); }
+    .about { grid-template-columns: 1fr; gap: 32px; }
+    section { padding: 56px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Контакты -->
+  <header class="topbar">
+    <span class="status"><span class="dot"></span>Открыт к работе</span>
+    <nav>
+      <a href="https://t.me/grosschan" target="_blank" rel="noopener">Telegram</a>
+    </nav>
+  </header>
+
+  <!-- Имя и описание. Фото: положите файл img/me.jpg -->
+  <div class="hero">
+    <div class="avatar" id="avatar">АА</div>
+    <div>
+      <h1>Артём Асрян</h1>
+      <p>Креативный специалист · Москва</p>
+    </div>
+  </div>
+
+  <nav class="tiles" aria-label="Разделы">
+    <a class="tile" href="#design" id="tile-design">
+      <div class="tile-bg"></div>
+      <svg class="tile-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="1.5"/><path d="M8 7h8M8 11h5"/><circle cx="12" cy="16.5" r="2"/></svg>
+      <div class="tile-body"><div><span class="tile-title">Дизайн</span><span class="tile-sub">Афиши, листовки, ролл-апы</span></div><span class="tile-arrow">→</span></div>
+    </a>
+    <a class="tile" href="#video" id="tile-video">
+      <div class="tile-bg"></div>
+      <svg class="tile-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="15" height="14" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg>
+      <div class="tile-body"><div><span class="tile-title">Видео</span><span class="tile-sub">Съёмка и монтаж</span></div><span class="tile-arrow">→</span></div>
+    </a>
+    <a class="tile" href="#about" id="tile-about">
+      <div class="tile-bg"></div>
+      <svg class="tile-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+      <div class="tile-body"><div><span class="tile-title">Обо мне</span><span class="tile-sub">Опыт и контакты</span></div><span class="tile-arrow">→</span></div>
+    </a>
+  </nav>
+
+  <section id="design">
+    <div class="section-head"><h2>Дизайн</h2><span id="design-count"></span></div>
+    <div class="filters" id="filters" role="group" aria-label="Фильтр по типу работ"></div>
+    <div class="works" id="works"></div>
+  </section>
+
+  <section id="video">
+    <div class="section-head"><h2>Видео</h2><span id="video-count"></span></div>
+    <div class="videos" id="videos"></div>
+  </section>
+
+  <!-- ЗАМЕНИТЕ: текст о себе и инструменты -->
+  <section id="about">
+    <div class="section-head"><h2>Обо мне</h2></div>
+    <div class="about">
+      <div>
+        <p>Снимаю и монтирую видео: клипы, репортажи с мероприятий, ролики для соцсетей. Делаю всё сам — от идеи и съёмки до цветокоррекции и финального монтажа.</p>
+        <p>Параллельно занимаюсь графическим дизайном: делаю афиши, листовки и ролл-апы для мероприятий и брендов.</p>
+      </div>
+      <div>
+        <h3>Инструменты</h3>
+        <div class="chips">
+          <span class="chip">Photoshop</span><span class="chip">Capcut</span><span class="chip">Illustrator</span><span class="chip">Claude Code</span><span class="chip">ChatGPT</span>
+        </div>
+        <h3>Техника</h3>
+        <div class="chips">
+          <span class="chip">Камера</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Контакты внизу -->
+  <section class="contact" id="contact">
+    <h2>Есть проект?<br>Давайте обсудим</h2>
+    <p>Отвечаю в течение дня</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://t.me/grosschan" target="_blank" rel="noopener">Написать в Telegram</a>
+      <a class="btn" href="https://t.me/grosschan" target="_blank" rel="noopener">@grosschan</a>
+    </div>
+  </section>
+
+  <footer>© <span id="year">2026</span> Артём Асрян</footer>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр работы">
+  <button class="lb-close" type="button" aria-label="Закрыть">×</button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Предыдущее изображение"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="lb-nav lb-next" type="button" aria-label="Следующее изображение"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+</div>
+
+<div class="lightbox" id="vlightbox" role="dialog" aria-modal="true" aria-label="Просмотр видео">
+  <button class="lb-close" type="button" aria-label="Закрыть">×</button>
+  <figure><div class="vbox"></div><figcaption></figcaption></figure>
+</div>
+
+<script>
+/* =====================================================================
+   ЗДЕСЬ ЗАПОЛНЯЮТСЯ РАБОТЫ
+   photo  — путь к фото. Положите файл img/me.jpg — и он появится сам
+            (пока файла нет, показываются инициалы)
+   videos — platform: "file" — свой файл, без чужих логотипов и бесплатно:
+                     src — путь к MP4, например "video/showreel.mp4"
+            platform: "youtube" или "vimeo", id — код видео из ссылки:
+            youtube.com/watch?v=ЭТОТ_КОД   или   vimeo.com/ЭТОТ_КОД
+            reel: true — шоурил, показывается первым и крупно
+            hidden: true — ролик скрыт с сайта (уберите, чтобы показать)
+            vertical: true — вертикальный ролик (9:16); такие ролики
+                    собираются под шоурилом, под плашкой «Вертикальный формат»
+            desc — необязательная строка описания под названием
+            thumb — своя обложка, например "img/web/showreel.jpg"
+                    (необязательно; для YouTube берётся сама, для файла —
+                    кадр из начала ролика, но своя картинка грузится быстрее)
+   design — работы по дизайну:
+            type   — тип: "Афиша", "Листовка", "Ролл-ап" (можно любой новый)
+            images — список картинок, например ["img/flyer-1.jpg", "img/flyer-2.jpg"]
+                     если картинок больше одной, в карточке появится листалка
+            по умолчанию работа показывается целиком, без обрезки;
+            fit: "cover" — заполнить всю карточку (края могут обрезаться)
+            Лёгкие веб-версии картинок лежат в img/web/ — оригиналы не трогаются
+   ===================================================================== */
+const SITE = {
+  photo: "img/me.jpg",
+  videos: [
+    { reel: true, hidden: true, title: "Шоурил", platform: "youtube", id: "", roles: ["Съёмка", "Монтаж"] },
+    { title: "Нарезка голов Вирджила Пинсона в Лиге Конференций",     platform: "file", src: "video/web/pinson-goals.mp4", thumb: "img/web/video-pinson.jpg",     roles: ["Монтаж"] },
+    { title: "Кандидат в депутаты Мосгордумы подписывается в поддержку коллеги", platform: "file", src: "video/web/campaign-hq.mp4", thumb: "img/web/video-campaign.jpg", roles: ["Съёмка", "Монтаж"] },
+    { title: "Районный волейбольный матч",                    platform: "file", src: "video/web/volleyball.mp4",   thumb: "img/web/video-volleyball.jpg", vertical: true, roles: ["Съёмка", "Монтаж"] },
+    { title: "Праздничный перенос огня с костра церкви в Союз Армян России",  platform: "file", src: "video/web/trndez.mp4",       thumb: "img/web/video-trndez.jpg",     vertical: true, roles: ["Монтаж"] }
+  ],
+  design: [
+    { type: "Афиша",    title: "Афиша для армянского музея «Тапан»",   images: ["img/web/poster.jpg"] },
+    { type: "Афиша",    title: "Матчевая афиша для ФК «Бентонит»",   images: ["img/web/football.jpg"] },
+    { type: "Листовка", title: "Двусторонний флаер A5 для магазина товаров для бани и дачи",   images: ["img/web/flyer-1.jpg", "img/web/flyer-2.jpg"] },
+    { type: "Ролл-ап",  title: "Макет ролл-апа для сбора подписей и визуализация на месте установки", images: ["img/web/rollup-1.jpg", "img/web/rollup-2.jpg"] },
+    { type: "Табличка", title: "Информационная табличка для аптеки",  images: ["img/web/pharmacy-sign.svg"] }
+  ]
+};
+
+/* Как называть кнопки фильтра для каждого типа */
+const TYPE_LABELS = { "Афиша": "Афиши", "Листовка": "Листовки", "Ролл-ап": "Ролл-апы", "Табличка": "Таблички", "Вывеска": "Вывески", "Буклет": "Буклеты", "Баннер": "Баннеры", "Логотип": "Логотипы" };
+
+const PH_COLORS = [["#3d2526", "#f0a8a3"], ["#22303f", "#9fc3e6"], ["#3a3420", "#e8cf86"], ["#233629", "#9fd1ae"], ["#33263b", "#cfaee6"], ["#3b2c22", "#e9b98f"]];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const plural = (n, one, few, many) => n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many;
+
+function thumbOf(v) {
+  if (v.thumb) return v.thumb;
+  if (v.platform === "youtube" && v.id) return `https://i.ytimg.com/vi/${encodeURIComponent(v.id)}/hqdefault.jpg`;
+  return "";
+}
+const hasVideo = v => !!(v.platform === "file" ? v.src : v.id);
+function embedOf(v) {
+  const id = encodeURIComponent(v.id);
+  return v.platform === "vimeo"
+    ? `https://player.vimeo.com/video/${id}?autoplay=1`
+    : `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+}
+
+/* Фото: показываем, только если файл действительно есть, иначе остаются инициалы */
+if (SITE.photo) {
+  const ph = new Image();
+  ph.onload = () => {
+    document.getElementById("avatar").innerHTML = `<img src="${esc(SITE.photo)}" alt="Артём Асрян">`;
+    setTile("tile-about", SITE.photo);
+  };
+  ph.src = SITE.photo;
+}
+document.getElementById("year").textContent = new Date().getFullYear();
+
+/* Видео */
+/* Порядок: шоурил, вертикальные, горизонтальные (внутри групп — как в списке) */
+const videoRank = v => v.reel ? 0 : v.vertical ? 1 : 2;
+const videos = SITE.videos.filter(v => !v.hidden).sort((a, b) => videoRank(a) - videoRank(b));
+const videoCard = (v, i) => {
+  const t = thumbOf(v);
+  return `<article class="video${v.reel ? " is-reel" : ""}${v.vertical ? " is-vertical" : ""}">
+    <button class="player" type="button" data-i="${i}" aria-label="Смотреть: ${esc(v.title)}"${t ? ` style="background-image:url('${esc(t)}')"` : ""}>
+      ${v.platform === "file" && v.src && !t ? `<video class="poster" src="${esc(v.src)}#t=0.5" preload="metadata" muted playsinline aria-hidden="true" tabindex="-1"></video>` : ""}
+      <span class="play"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+      ${hasVideo(v) ? "" : `<span class="empty">Здесь будет видео</span>`}
+    </button>
+    <div class="video-info">
+      <h3>${esc(v.title)}</h3>
+      ${v.desc ? `<p>${esc(v.desc)}</p>` : ""}
+      <div class="tags">${(v.roles || []).map(r => `<button class="tag" type="button" data-role="${esc(r)}" aria-pressed="false" title="Показать только ролики, где: ${esc(r)}">${esc(r)}</button>`).join("")}</div>
+    </div>
+  </article>`;
+};
+/* Идущие подряд ролики одной ориентации собираем в общий ряд */
+const videoGroups = [];
+videos.forEach((v, i) => {
+  const kind = v.reel ? "reel" : v.vertical ? "vertical" : "wide";
+  const last = videoGroups[videoGroups.length - 1];
+  if (last && last.kind === kind && kind !== "reel") last.html += videoCard(v, i);
+  else videoGroups.push({ kind, html: videoCard(v, i) });
+});
+/* Плашки форматов показываем, когда есть и вертикальные, и горизонтальные ролики */
+const formatHead = (icon, label) => `<div class="format-head"><span class="format-pill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icon}</svg>${label}</span></div>`;
+const FORMAT_HEADS = {
+  vertical: formatHead('<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>', "Вертикальный формат"),
+  wide: formatHead('<rect x="2" y="7" width="20" height="10" rx="2"/><path d="M18 11v2"/>', "Горизонтальный формат")
+};
+const bothFormats = videoGroups.some(g => g.kind === "vertical") && videoGroups.some(g => g.kind === "wide");
+document.getElementById("videos").innerHTML = videoGroups
+  .map(g => `${bothFormats && FORMAT_HEADS[g.kind] || ""}<div class="vgrid ${g.kind}">${g.html}</div>`).join("");
+/* Фильтр по ролям: метки («Съёмка», «Монтаж») можно включать вместе —
+   остаются ролики, где есть все выбранные роли. Повторный клик выключает метку,
+   кнопка у счётчика сбрасывает всё */
+const videosEl = document.getElementById("videos"), videoCountEl = document.getElementById("video-count");
+const roleFilter = new Set();
+const matchesRoles = v => [...roleFilter].every(r => (v.roles || []).includes(r));
+function updateVideoCount() {
+  const total = videos.filter(v => !v.reel).length;
+  if (!roleFilter.size) { videoCountEl.textContent = `${total} ${plural(total, "работа", "работы", "работ")}`; return; }
+  const shown = videos.filter(v => !v.reel && matchesRoles(v)).length;
+  const label = esc([...roleFilter].join(" + "));
+  videoCountEl.innerHTML = `<button class="reset-filter" type="button" aria-label="Сбросить фильтр «${label}»">${label}: ${shown} из ${total}<span aria-hidden="true">×</span></button>`;
+}
+function toggleRole(role) {
+  if (role === null) roleFilter.clear();
+  else if (roleFilter.has(role)) roleFilter.delete(role);
+  else roleFilter.add(role);
+  videosEl.querySelectorAll(".video").forEach(card => {
+    card.hidden = !matchesRoles(videos[card.querySelector(".player").dataset.i]);
+  });
+  videosEl.querySelectorAll(".tag").forEach(t => {
+    const on = roleFilter.has(t.dataset.role);
+    t.classList.toggle("active", on);
+    t.setAttribute("aria-pressed", on);
+  });
+  /* Пустые ряды прячем вместе с их плашкой формата */
+  videosEl.querySelectorAll(".vgrid").forEach(g => {
+    const empty = ![...g.children].some(c => !c.hidden);
+    g.hidden = empty;
+    const head = g.previousElementSibling;
+    if (head && head.classList.contains("format-head")) head.hidden = empty;
+  });
+  updateVideoCount();
+}
+updateVideoCount();
+videoCountEl.addEventListener("click", e => { if (e.target.closest(".reset-filter")) toggleRole(null); });
+/* Видео открывается в отдельном окне поверх страницы */
+const vlb = document.getElementById("vlightbox");
+const vbox = vlb.querySelector(".vbox"), vcap = vlb.querySelector("figcaption");
+let vlbOpener = null;
+function openVideo(v, opener) {
+  vbox.innerHTML = v.platform === "file"
+    ? `<video src="${esc(v.src)}" title="${esc(v.title)}" controls autoplay playsinline></video>`
+    : `<iframe src="${embedOf(v)}" title="${esc(v.title)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  vcap.textContent = v.title;
+  vlbOpener = opener;
+  vlb.classList.add("open");
+  document.body.style.overflow = "hidden";
+  vlb.querySelector(".lb-close").focus();
+}
+function closeVideo() {
+  vbox.innerHTML = "";   /* удаляем плеер, чтобы звук не продолжал играть */
+  vlb.classList.remove("open");
+  document.body.style.overflow = "";
+  if (vlbOpener) vlbOpener.focus();
+}
+videosEl.addEventListener("click", e => {
+  const tag = e.target.closest(".tag");
+  if (tag) { toggleRole(tag.dataset.role); return; }
+  const btn = e.target.closest(".player");
+  if (!btn) return;
+  const v = videos[btn.dataset.i];
+  if (hasVideo(v)) openVideo(v, btn);
+});
+vlb.addEventListener("click", e => { if (e.target === vlb || e.target.closest(".lb-close")) closeVideo(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && vlb.classList.contains("open")) closeVideo(); });
+
+/* Дизайн: карточки */
+const design = SITE.design;
+const chevron = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const worksEl = document.getElementById("works");
+
+worksEl.innerHTML = design.map((w, i) => {
+  const imgs = w.images && w.images.length ? w.images : [""];
+  const many = imgs.length > 1;
+  const [bg, fg] = PH_COLORS[i % PH_COLORS.length];
+  const slides = imgs.map((src, j) => `<button class="slide" type="button" data-j="${j}" aria-label="Открыть: ${esc(w.title)}${many ? `, ${j + 1} из ${imgs.length}` : ""}">${src
+    ? `<img src="${esc(src)}" alt="${esc(w.title)}${many ? `, ${j + 1}` : ""}" loading="lazy">`
+    : `<span class="ph" style="background:${bg};color:${fg}"><b>${esc(w.title)}</b><small>${many ? `Изображение ${j + 1} из ${imgs.length}` : esc(w.type)}</small></span>`
+  }</button>`).join("");
+  return `<article class="work${w.fit === "cover" ? " fit-cover" : ""}" data-i="${i}" data-type="${esc(w.type)}">
+    <div class="frame">
+      <span class="badge">${esc(w.type)}</span>
+      ${many ? `<span class="counter">1 / ${imgs.length}</span>` : ""}
+      <div class="slides">${slides}</div>
+      ${many ? `<button class="arrow prev" type="button" aria-label="Предыдущее изображение" disabled>${chevron("m15 6-6 6 6 6")}</button>
+      <button class="arrow next" type="button" aria-label="Следующее изображение">${chevron("m9 6 6 6-6 6")}</button>
+      <div class="dots">${imgs.map((_, j) => `<i${j ? "" : ' class="on"'}></i>`).join("")}</div>` : ""}
+    </div>
+    <h3>${esc(w.title)}</h3>
+  </article>`;
+}).join("");
+document.getElementById("design-count").textContent = `${design.length} ${plural(design.length, "работа", "работы", "работ")}`;
+
+/* Дизайн: листалка внутри карточки */
+worksEl.querySelectorAll(".work").forEach(card => {
+  const track = card.querySelector(".slides");
+  const n = track.children.length;
+  if (n < 2) return;
+  const prev = card.querySelector(".prev"), next = card.querySelector(".next");
+  const dots = card.querySelectorAll(".dots i"), counter = card.querySelector(".counter");
+  let k = 0;
+  const show = i => {
+    k = Math.max(0, Math.min(n - 1, i));
+    dots.forEach((d, j) => d.classList.toggle("on", j === k));
+    counter.textContent = `${k + 1} / ${n}`;
+    prev.disabled = k === 0;
+    next.disabled = k === n - 1;
+  };
+  const go = i => { show(i); track.scrollTo({ left: k * track.clientWidth, behavior: "smooth" }); };
+  track.addEventListener("scroll", () => show(Math.round(track.scrollLeft / track.clientWidth)), { passive: true });
+  prev.addEventListener("click", () => go(k - 1));
+  next.addEventListener("click", () => go(k + 1));
+});
+
+/* Дизайн: фильтр по типу (появляется, если типов больше одного) */
+const types = [...new Set(design.map(w => w.type))];
+const filtersEl = document.getElementById("filters");
+if (types.length > 1) {
+  filtersEl.innerHTML = [["", "Все"], ...types.map(t => [t, TYPE_LABELS[t] || t])]
+    .map(([t, label], k) => `<button class="filter${k ? "" : " active"}" type="button" data-t="${esc(t)}" aria-pressed="${!k}">${esc(label)}</button>`).join("");
+  filtersEl.addEventListener("click", e => {
+    const b = e.target.closest(".filter");
+    if (!b) return;
+    filtersEl.querySelectorAll(".filter").forEach(f => { f.classList.toggle("active", f === b); f.setAttribute("aria-pressed", f === b); });
+    worksEl.querySelectorAll(".work").forEach(w => { w.hidden = !!b.dataset.t && w.dataset.type !== b.dataset.t; });
+  });
+} else {
+  filtersEl.remove();
+}
+
+/* Лайтбокс: крупный просмотр с перелистыванием */
+const lb = document.getElementById("lightbox");
+const lbImg = lb.querySelector("img"), lbCap = lb.querySelector("figcaption");
+const lbPrev = lb.querySelector(".lb-prev"), lbNext = lb.querySelector(".lb-next");
+let lbItem = null, lbPos = 0;
+
+function renderLb() {
+  const { w, srcs } = lbItem;
+  const many = srcs.length > 1;
+  lbImg.src = srcs[lbPos];
+  lbImg.alt = w.title;
+  lbCap.textContent = many ? `${w.title} · ${lbPos + 1} / ${srcs.length}` : w.title;
+  lbPrev.hidden = lbNext.hidden = !many;
+}
+function openLb(w, j) {
+  const src = (w.images || [])[j];
+  if (!src) return;
+  const srcs = w.images.filter(Boolean);
+  lbItem = { w, srcs };
+  lbPos = srcs.indexOf(src);
+  renderLb();
+  lb.classList.add("open");
+  document.body.style.overflow = "hidden";
+  lb.querySelector(".lb-close").focus();
+}
+function stepLb(d) {
+  if (!lbItem || lbItem.srcs.length < 2) return;
+  lbPos = (lbPos + d + lbItem.srcs.length) % lbItem.srcs.length;
+  renderLb();
+}
+function closeLb() {
+  lb.classList.remove("open");
+  document.body.style.overflow = "";
+  lbItem = null;
+}
+worksEl.addEventListener("click", e => {
+  const s = e.target.closest(".slide");
+  if (s) openLb(design[s.closest(".work").dataset.i], +s.dataset.j);
+});
+lb.addEventListener("click", e => { if (e.target === lb || e.target.closest(".lb-close")) closeLb(); });
+lbPrev.addEventListener("click", () => stepLb(-1));
+lbNext.addEventListener("click", () => stepLb(1));
+document.addEventListener("keydown", e => {
+  if (!lb.classList.contains("open")) return;
+  if (e.key === "Escape") closeLb();
+  if (e.key === "ArrowLeft") stepLb(-1);
+  if (e.key === "ArrowRight") stepLb(1);
+});
+let touchX = null;
+lb.addEventListener("touchstart", e => { touchX = e.touches[0].clientX; }, { passive: true });
+lb.addEventListener("touchend", e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if (Math.abs(dx) > 50) stepLb(dx < 0 ? 1 : -1);
+  touchX = null;
+});
+
+/* Превью в плитках: обложка шоурила, первая работа по дизайну, фото */
+function setTile(id, url) {
+  if (!url) return;
+  const tile = document.getElementById(id);
+  tile.querySelector(".tile-bg").style.backgroundImage = `url('${url}')`;
+  tile.classList.add("has-preview");
+}
+setTile("tile-video", videos.map(thumbOf).find(Boolean));
+setTile("tile-design", design.flatMap(w => w.images || []).find(Boolean));
+</script>
+</body>
+</html>
