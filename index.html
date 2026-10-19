@@ -193,6 +193,8 @@
     .avatar { width: 96px; height: 96px; }
     .tiles { grid-template-columns: 1fr; gap: 12px; padding-bottom: 64px; }
     .tile { aspect-ratio: auto; height: 120px; }
+    /* Кадр афиши в узкой плитке: человек от головы до рук — по центру полосы */
+    #tile-design .tile-bg { background-position: center 38%; }
     .tile-icon { top: 50%; left: auto; right: 64px; transform: translateY(-50%); }
     .tile::after { background: linear-gradient(to right, rgba(14,14,13,.92) 0%, rgba(14,14,13,.2) 100%); }
     .tile-body { top: 0; bottom: 0; align-items: center; }
